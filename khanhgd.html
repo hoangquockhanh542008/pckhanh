@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="GD.png">
+    <title>Geometry Dash - Khánh GD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, red, yellow, green, cyan, blue, magenta, red);
+            background-size: 400% 400%;
+            animation: gradientMove 12s infinite linear;
+            z-index: -2;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .footer {
+            
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(90deg, red, yellow, green, cyan, blue, magenta, red);
+            background-size: 400% 100%;
+            animation: rgbLoop 10s infinite linear;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+        }
+        .social-icons {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: 0.3s ease-in-out;
+            text-decoration: none;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+        .social-icons a i {
+            font-size: 30px;
+            color: white;
+            transition: 0.3s ease-in-out;
+        }
+        .social-icons a:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .social-icons a:hover i {
+            color: #ff6600;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            color: #fff;
+            overflow-x: hidden;
+        }
+        /* Nền RGB động */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, red, yellow, green, cyan, blue, magenta, red);
+            background-size: 400% 400%;
+            animation: gradientMove 12s infinite linear;
+            z-index: -2;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .header {
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            background: linear-gradient(90deg, red, yellow, green, cyan, blue, magenta, red);
+            background-size: 400% 100%;
+            animation: rgbLoop 10s infinite linear;
+        }
+        @keyframes rgbLoop {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        .game-info img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .game-info p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .spacer {
+            margin: 40px 0;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #ff6600;
+            color: #fff;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid transparent;
+            transition: 0.3s ease-in-out;
+            min-width: 150px;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.6);
+        }
+        .btn:hover {
+            background: #ff4500;
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            width: 500px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+            z-index: 999;
+        }
+        .popup.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        .popup:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        .popup button {
+            margin-top: 15px;
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background: #ff6600;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+        }
+        .popup button:hover {
+            background: #ff4500;
+            transform: scale(1.1);
+        }
+        .footer {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(90deg, red, yellow, green, cyan, blue, magenta, red);
+            background-size: 400% 100%;
+            animation: rgbLoop 10s infinite linear;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+        }
+        .social-icons {
+            margin-top: 10px;
+        }
+        .social-icons a {
+            color: white;
+            margin: 0 10px;
+            font-size: 22px;
+            transition: 0.3s ease-in-out;
+        }
+        .social-icons a:hover {
+            color: #ff6600;
+            transform: scale(1.2);
+        }
+        .footer {
+    font-size: 14px; /* Giảm kích thước chữ */
+    padding: 8px 0; /* Giảm khoảng cách trên dưới */
+    height: auto; /* Chiều cao tự động để phù hợp nội dung */
+}
+
+.social-icons a {
+    width: 35px; /* Giảm kích thước icon */
+    height: 35px;
+}
+
+.social-icons a i {
+    font-size: 20px; /* Giảm kích thước icon */
+}
+
+/* In đậm toàn bộ chữ */
+body {
+    font-weight: bold;
+}
+
+/* Làm nhỏ ô đen và đẩy lên trên */
+.container {
+    max-width: 700px; /* Giảm kích thước chiều rộng */
+    padding: 15px; /* Giảm khoảng cách bên trong */
+    transform: translateY(-20px); /* Đẩy lên trên */
+}
+
+/* Đặt ảnh nền cho ô đen */
+.container {
+    background: url('https://i.imgur.com/your-image.jpg') no-repeat center;
+    background-size: cover;
+    color: white;
+}
+
+/* Thu nhỏ hai nút tải */
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    min-width: 130px;
+}
+/* Làm mờ nền nhưng không trong suốt */
+.container {
+    max-width: 700px; /* Giảm chiều rộng */
+    padding: 15px;
+    transform: translateY(-20px); /* Đẩy lên trên */
+    background: rgba(0, 0, 0, 0.5); /* Màu nền đen mờ */
+    backdrop-filter: blur(10px); /* Hiệu ứng mờ ảo */
+    border-radius: 10px;
+}
+/* Hiệu ứng mờ mạnh hơn cho .container */
+.container {
+    max-width: 700px;
+    padding: 15px;
+    transform: translateY(-20px);
+    background: rgba(0, 0, 0, 0.4); /* Mở hơn */
+    backdrop-filter: blur(15px); /* Mờ hơn */
+    border-radius: 10px;
+}
+
+/* Áp dụng hiệu ứng mờ cho popup */
+.popup {
+    background: rgba(0, 0, 0, 0.4); /* Mở hơn */
+    backdrop-filter: blur(15px); /* Mờ hơn */
+}
+/* Vùng chứa video và nội dung hướng dẫn */
+#guide-container {
+    position: fixed;
+    top: 69px;
+    left: 2px;
+    width: 600px;
+    background: rgba(255, 255, 255, 0.2); /* Màu nền trong suốt */
+    backdrop-filter: blur(10px); /* Làm mờ nền */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Viền nhẹ */
+    padding: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border: 2px solid #ccc;
+    cursor: grab;
+    z-index: 1000;
+    border-radius: 10px;
+}
+
+#video {
+    width: 100%;
+    height: 315px;
+    border: none;
+    border-radius: 10px;
+}
+
+/* Nút đăng ký kênh */
+#subscribe-container {
+    text-align: center;
+    margin: 10px 0;
+}
+
+#subscribe-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background: red;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#subscribe-button:hover {
+    background: darkred;
+}
+
+/* Nội dung hướng dẫn */
+#guide-content {
+    padding: 10px;
+    font-size: 16px;
+}
+@media (max-width: 600px) {
+    #guide-container {
+        display: none;
+    }
+}
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    background: linear-gradient(90deg, red, yellow, green, cyan, blue, magenta, red);
+    background-size: 400% 100%;
+    animation: rgbLoop 10s infinite linear;
+}
+body {
+    padding-bottom: 50px; /* Để chừa chỗ cho footer */
+}
+
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="header">Geometry Dash - Khánh GD (Đây là website chính chủ của Khánh GD Nghiêm cấp hành vi quay video có website này khi không được sự cho phép)</div>
+
+    <div class="container">
+        <h1>Geometry Dash</h1>
+        <p><i>Trò chơi âm nhạc kết hợp vượt chướng ngại vật đầy thử thách!</i></p>
+        <div class="game-info">
+            <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/322170/header.jpg" alt="Geometry Dash">
+            <p><strong>Nhà phát triển:</strong> RobTop Games</p>
+            <p><strong>Thể loại:</strong> Nhảy, Âm nhạc, Phiêu lưu</p>
+            <p><strong>Nền tảng:</strong> PC, Android</p>
+            <p><strong>Giới thiệu:</strong> Geometry Dash là một tựa game platformer âm nhạc, nơi bạn điều khiển một khối vuông vượt qua các chướng ngại vật với độ khó tăng dần. Với nhạc nền sôi động, game đòi hỏi phản xạ nhanh và sự chính xác cao.</p>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="btn-container">
+            <button class="btn" onclick="showPopup('PC')"><i class="fas fa-desktop"></i> Tải PC</button>
+            <button class="btn" onclick="showPopup('Android')"><i class="fas fa-mobile-alt"></i> Tải Android</button>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <h2 id="popup-title">Đang tải game...</h2>
+        <p>Vui lòng chờ giây lát!</p>
+        <button onclick="closePopup()">Đóng</button>
+    </div>
+
+    <div class="footer">
+        <span>©2025 KhanhGD</span>
+        <div class="social-icons">
+            <a href="#" title="Facebook - Hoàng Quốc Khánh"><i class="fab fa-facebook"></i></a>
+            <a href="#" title="YouTube - Khánh GD"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+    <div class="animated-bg"></div>
+     <!-- Vùng chứa video, nội dung và nút đăng ký -->
+     <div id="guide-container">
+        <iframe id="video" src="https://www.youtube-nocookie.com/embed/_M-kLzRBL_w?playlist=_M-kLzRBL_w&autoplay=1&iv_load_policy=3&loop=1&start=" allowfullscreen></iframe>
+        
+        <!-- Nút đăng ký kênh -->
+        <div id="guide-content">
+            <h2 style="text-align: center;"><strong>Nếu không biết cách làm coi video sau:</strong></h2>
+           
+        </div>
+        <br>
+        <div id="subscribe-container">
+            <a href="https://www.youtube.com/@Kh%C3%A1nhGD-2k8" target="_blank" id="subscribe-button">📢 Đăng Ký Kênh</a>
+        </div>
+
+        
+    </div>
+
+    <div class="footer">
+        <span>©<span id="year">2025</span> KhanhGD</span>
+        <div id="real-time-clock"></div>
+        <div class="social-icons">
+            <a href="https://www.facebook.com/profile.php?id=100079270105917" title="Facebook - Hoàng Quốc Khánh" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.youtube.com/@Kh%C3%A1nhGD-2k8" title="YouTube - Khánh GD" target="_blank"><i class="fab fa-youtube"></i></a>
+        </div>
+<script>
+ function showPopup(platform) {
+            let popupTitle = document.getElementById('popup-title');
+            let downloadLink = "#"; 
+
+            if (platform === "PC") {
+                popupTitle.innerHTML = "Đang tải Geometry Dash cho PC...";
+                downloadLink = "https://drive.usercontent.google.com/download?id=1NlAC0p4U1Vgm62aliZ7gVDrm5jOOqY8F&export=download&authuser=0&confirm=t&uuid=941e42f5-632c-4f1f-baf3-50936db9c948&at=AEz70l5ThH4CmFfl6jyS5jt3BhcC%3A1741962657771";
+            } else if (platform === "Android") {
+                popupTitle.innerHTML = "Đang tải Geometry Dash cho Android...";
+                downloadLink = "https://storage.apk.live/com.robtopx.geometryjump--37.apk";
+            }
+
+            document.getElementById('popup').classList.add('active');
+
+            setTimeout(() => {
+                window.location.href = downloadLink;
+            }, 2000);
+        }
+
+        function closePopup() {
+            document.getElementById('popup').classList.remove('active');
+        }
+ document.addEventListener("DOMContentLoaded", function () {
+        // Chặn bôi đen
+        document.addEventListener("selectstart", function (e) {
+            e.preventDefault();
+        });
+
+        // Chặn chuột phải
+        document.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+        });
+
+        // Chặn phím Ctrl + C, Ctrl + X, Ctrl + V
+        document.addEventListener("keydown", function (e) {
+            if (e.ctrlKey && (e.key === "c" || e.key === "C" || e.key === "x" || e.key === "X" || e.key === "v" || e.key === "V")) {
+                e.preventDefault();
+            }
+        });
+
+        // Chặn kéo thả
+        document.addEventListener("dragstart", function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener("drop", function (e) {
+            e.preventDefault();
+        });
+    });
+    document.addEventListener("keydown", function (e) {
+    if (e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+        (e.ctrlKey && e.keyCode === 85) // Ctrl+U (View Source)
+    ) {
+        e.preventDefault();
+        alert("Chức năng này đã bị vô hiệu hóa!");
+    }
+});
+function updateClock() {
+        let now = new Date();
+        let year = now.getFullYear();
+        let dateStr = now.toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        let timeStr = now.toLocaleTimeString('vi-VN');
+
+        document.getElementById("real-time-clock").innerHTML = dateStr + " - " + timeStr;
+        document.getElementById("year").textContent = year;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+
+
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+    document.body.addEventListener("click", function (event) {
+        if (event.target.tagName === "BUTTON") {
+            let youtubeLink = "https://www.youtube.com/@Kh%C3%A1nhGD-2k8"; // Link kênh YouTube của bạn
+            let downloadLink = "#"; // Mặc định, tránh lỗi
+
+            if (event.target.getAttribute("data-platform") === "PC") {
+                downloadLink = "https://drive.usercontent.google.com/download?id=1NlAC0p4U1Vgm62aliZ7gVDrm5jOOqY8F&export=download&authuser=0&confirm=t&uuid=941e42f5-632c-4f1f-baf3-50936db9c948&at=AEz70l5ThH4CmFfl6jyS5jt3BhcC%3A1741962657771";
+            } else if (event.target.getAttribute("data-platform") === "Android") {
+                downloadLink = "https://storage.apk.live/com.robtopx.geometryjump--37.apk";
+            }
+
+            window.open(youtubeLink, "_blank"); // Mở YouTube ở tab mới
+            window.location.href = downloadLink; // Mở link tải ngay trong tab hiện tại
+        }
+    });
+});
+// Tính năng kéo thả vùng chứa video và hướng dẫn
+let guideContainer = document.getElementById("guide-container");
+let isDragging = false;
+let offsetX, offsetY;
+
+guideContainer.addEventListener("mousedown", function (e) {
+    isDragging = true;
+    offsetX = e.clientX - guideContainer.offsetLeft;
+    offsetY = e.clientY - guideContainer.offsetTop;
+    guideContainer.style.cursor = "grabbing";
+});
+
+document.addEventListener("mousemove", function (e) {
+    if (isDragging) {
+        guideContainer.style.left = e.clientX - offsetX + "px";
+        guideContainer.style.top = e.clientY - offsetY + "px";
+    }
+});
+
+document.addEventListener("mouseup", function () {
+    isDragging = false;
+    guideContainer.style.cursor = "grab";
+});
+
+</script>
+</body>
+</html>

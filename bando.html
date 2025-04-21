@@ -1,0 +1,48 @@
+<!-- AOS + Tailwind + Animation CSS -->
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <style>
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #3b82f6; }
+      50% { box-shadow: 0 0 25px #2563eb; }
+      100% { box-shadow: 0 0 10px #3b82f6; }
+    }
+
+    .glow-border {
+      animation: glow 2s infinite;
+    }
+
+    .hover-scale {
+      transition: transform 0.5s, box-shadow 0.5s;
+    }
+
+    .hover-scale:hover {
+      transform: scale(1.03);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex items-center justify-center p-6">
+  <div 
+    data-aos="fade-up" 
+    data-aos-duration="1500" 
+    data-aos-delay="200"
+    class="rounded-3xl overflow-hidden glow-border hover-scale max-w-5xl w-full"
+  >
+    <iframe 
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d62695.327275550735!2d106.55715522167964!3d10.852730999999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317529798a06bc69%3A0xc1c961c2fe6bde91!2sIMC!5e0!3m2!1svi!2s!4v1745200512271!5m2!1svi!2s" 
+      width="100%" 
+      height="450" 
+      style="border:0;" 
+      allowfullscreen="" 
+      loading="lazy" 
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+  </div>
+
+  <!-- AOS Script -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init();</script>
+</body>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="GD.png">
+    <title>Remote software installation - KhanhPC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?hl=en" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6Le1rRYrAAAAAKt07uCfmbqyogPZGvZlUtomhKCX&hl=en"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="khanhpc.css">
+<style>
+
+</style>
+</head>
+
+  
+<body>
+        <!-- Khung đăng nhập -->
+        <div class="login-card" id="loginCard">
+            <button class="login-google-btn" id="googleLogin">
+              <div class="icon-circle">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google icon">
+              </div>
+              <span>Sign in with Google</span>
+            </button>
+          </div>
+        
+          <div class="account-bar" id="accountBar" style="display: none;">
+            <label for="avatarUpload">
+              <img id="userPhoto" src="" alt="Avatar">
+            </label>
+            <span class="account-name" id="userName"></span>
+          </div>
+        
+          <div class="account-info" id="accountInfo">
+            <img id="infoAvatar" src="" alt="Avatar">
+            <p><strong>Full name:</strong> <span id="infoName">Nguyễn Văn A</span></p>
+          <p><strong>Nickname:</strong> <span id="infoNickname">VanA</span></p>
+          <p><strong>Email:</strong> <span id="infoEmail">vana@example.com</span></p>
+          <p><strong>Phone number:</strong> <span id="infoPhone">0123456789</span></p>
+          <p><strong>Date of birth:</strong> <span id="infoDOB">xx/xx/xxxx</span></p>
+          <button class="edit-btn" onclick="openEditPopup()">✏️ Edit</button>
+        
+        <!-- Nút đăng xuất đẹp hơn -->
+        <button class="logout-btn" onclick="logout()">Log out</button>
+        
+          </div>
+        
+          <input type="file" id="avatarUpload" accept="image/*"/>
+          
+        
+        
+        <div class="popup-overlay" id="editPopup">
+          <div class="popup-content">
+            <h3>Edit information</h3>
+            <label>Full name:</label>
+            <input type="text" id="editName">
+            <label>Nickname:</label>
+            <input type="text" id="editNickname">
+            <label>Email:</label>
+            <input type="email" id="editEmail">
+            <label>Phone number:</label>
+            <input type="text" id="editPhone">
+            <label>Date of birth:</label>
+            <input type="date" id="editDOB">
+            <div class="popup-buttons">
+              <button class="edit-btn" onclick="saveInfo()">💾 Save</button>
+              <button class="edit-btn cancel-btn" onclick="closeEditPopup()">❌ Cancel</button>
+            </div>
+          </div>
+        </div>
+        
+  
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRmdn4jSxw_ViPXV63ETKtmSBzNkrIKXg",
+    authDomain: "login-24d03.firebaseapp.com",
+    projectId: "login-24d03",
+    storageBucket: "login-24d03.appspot.com",
+    messagingSenderId: "680475305939",
+    appId: "1:680475305939:web:8b081fbc202ae7f8a53126",
+    measurementId: "G-Z9MYX4S742"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+  
+    const loginBtn = document.getElementById("googleLogin");
+    const loginCard = document.getElementById("loginCard");
+    const accountBar = document.getElementById("accountBar");
+    const userPhoto = document.getElementById("userPhoto");
+    const userName = document.getElementById("userName");
+    const avatarUpload = document.getElementById("avatarUpload");
+  
+    const accountInfo = document.getElementById("accountInfo");
+    const infoAvatar = document.getElementById("infoAvatar");
+    const infoName = document.getElementById("infoName");
+    const infoEmail = document.getElementById("infoEmail");
+    const infoPhone = document.getElementById("infoPhone");
+    const infoNickname = document.getElementById("infoNickname");
+    const infoDOB = document.getElementById("infoDOB");
+  
+    const popup = document.getElementById("editPopup");
+    const editName = document.getElementById("editName");
+    const editNickname = document.getElementById("editNickname");
+    const editEmail = document.getElementById("editEmail");
+    const editPhone = document.getElementById("editPhone");
+    const editDOB = document.getElementById("editDOB");
+  
+    loginBtn.onclick = async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("✅ Login successful:", result.user.displayName);
+      } catch (error) {
+        alert("❌ Login error: " + error.message);
+      }
+    };
+  
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loginCard.style.display = "none";
+        accountBar.style.display = "flex";
+        userPhoto.src = user.photoURL;
+        userName.textContent = user.displayName;
+  
+        // Gán thông tin chi tiết
+        infoAvatar.src = user.photoURL;
+        infoName.textContent = user.displayName;
+        infoEmail.textContent = user.email;
+  
+        // Tải nickname, sdt, dob từ localStorage
+        infoNickname.textContent = localStorage.getItem("nickname") || "Not yet";
+        infoPhone.textContent = localStorage.getItem("phone") || "Not yet";
+        infoDOB.textContent = localStorage.getItem("dob") || "Not yet";
+      } else {
+        loginCard.style.display = "block";
+        accountBar.style.display = "none";
+        accountInfo.style.display = "none";
+      }
+        if (!user) {
+          // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
+          window.location.href = "https://khanh-pc.vercel.app/loginen.html";
+        }
+        // Nếu người dùng đã đăng nhập, không làm gì, trang hiện tại vẫn giữ nguyên
+      });
+    async function addReply(parentId, replyText) {
+      if (!replyText || !currentUser) return;
+      await addDoc(collection(db, "comments"), {
+        name: currentUser.displayName,
+        email: currentUser.email,
+        photoURL: currentUser.photoURL,
+        uid: currentUser.uid,
+        text: replyText,
+        created: Date.now(),
+        parentId: parentId
+      });
+    }
+  
+    function renderCommentTree(cmt) {
+  const wrapper = document.createElement("div");
+  wrapper.appendChild(renderCommentFake(cmt));
+  if (cmt.replies.length) {
+    cmt.replies.forEach(reply => {
+      const replyEl = renderCommentFake(reply);
+      replyEl.classList.add("ml-10"); // indent
+      wrapper.appendChild(replyEl);
+    });
+  }
+  return wrapper;
+}
+
+function renderCommentFake(cmt) {
+  const commentItem = document.createElement("div");
+  commentItem.id = "cmt-" + cmt.id;
+  commentItem.className = "bg-white rounded-xl p-3 shadow-md mb-2";
+
+  commentItem.innerHTML = `
+    <div class="flex justify-between items-start">
+      <div class="flex gap-3">
+        <img src="${cmt.photoURL || 'https://www.gravatar.com/avatar/?d=mp'}" class="w-10 h-10 rounded-full" />
+        <div>
+          <p class="font-semibold">${cmt.name}
+            <span class="text-xs text-gray-500 block">(${cmt.email || 'Ẩn email'})</span>
+            <p class="text-sm text-gray-500">${new Date(cmt.created).toLocaleString()}</p>
+          </p>
+          <p>${cmt.text}</p>
+          <div class="mt-2">
+            <button class="text-blue-500 text-sm hover:underline" onclick="showReplyBox('${cmt.id}')">Reply</button>
+            ${currentUser?.uid === cmt.uid ? `<button onclick="deleteComment('${cmt.id}')" class="text-red-500 hover:underline text-sm ml-3">Erase</button>` : ''}
+          </div>
+          <div id="replyBox-${cmt.id}" class="mt-2 hidden">
+            <textarea id="replyInput-${cmt.id}" class="w-full p-2 border rounded-md text-sm mb-1" placeholder="Enter your feedback..."></textarea>
+            <button onclick="submitReply('${cmt.id}')" class="bg-blue-500 text-white text-sm px-3 py-1 rounded hover:bg-blue-600">Send feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  return commentItem;
+}
+    accountBar.onclick = () => {
+      accountInfo.style.display = accountInfo.style.display === "block" ? "none" : "block";
+    };
+  
+    avatarUpload.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      const user = auth.currentUser;
+      if (file && user) {
+        const storageRef = ref(storage, "avatars/" + user.uid);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        await updateProfile(user, { photoURL: url });
+        userPhoto.src = url;
+        infoAvatar.src = url;
+      }
+    });
+  
+    function openEditPopup() {
+      popup.style.display = "flex";
+      editName.value = infoName.textContent;
+      editNickname.value = localStorage.getItem("nickname") || "";
+      editEmail.value = infoEmail.textContent;
+      editPhone.value = localStorage.getItem("phone") || "";
+      editDOB.value = localStorage.getItem("dob") || "";
+    }
+  
+    function closeEditPopup() {
+      popup.style.display = "none";
+    }
+  
+    function saveInfo() {
+      infoName.textContent = editName.value;
+      infoNickname.textContent = editNickname.value;
+      infoPhone.textContent = editPhone.value;
+      infoDOB.textContent = editDOB.value;
+      localStorage.setItem("nickname", editNickname.value);
+      localStorage.setItem("phone", editPhone.value);
+      localStorage.setItem("dob", editDOB.value);
+      popup.style.display = "none";
+    }
+  
+    window.logout = () => {
+      signOut(auth).then(() => {
+        alert("✅ Logged out");
+        location.reload();
+      });
+    }
+  
+    window.openEditPopup = openEditPopup;
+    window.closeEditPopup = closeEditPopup;
+    window.saveInfo = saveInfo;
+    let currentUser = null;
+
+    document.getElementById("loginBtn").onclick = () => {
+      signInWithPopup(auth, provider).catch(console.error);
+    };
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("userInfo").innerHTML = `
+          <img src="${user.photoURL}" class="w-10 h-10 rounded-full inline-block" />
+          <span class="ml-2 font-semibold">${user.displayName}</span>
+        `;
+        document.getElementById("loginBtn").classList.add("hidden");
+        document.getElementById("commentBox").classList.remove("hidden");
+        listenToComments();
+      }
+    });
+
+    function renderComment(docSnap) {
+      const cmt = docSnap.data();
+      const commentItem = document.createElement("div");
+      commentItem.id = "cmt-" + docSnap.id;
+      commentItem.className = "bg-white rounded-xl p-3 shadow-md mb-2 flex justify-between items-start";
+
+      commentItem.innerHTML = `
+        <div class="flex gap-3">
+          <img src="${cmt.photoURL || 'https://www.gravatar.com/avatar/?d=mp'}" class="w-10 h-10 rounded-full" />
+          <div>
+            <p class="font-semibold">${cmt.name} 
+              <span class="text-xs text-gray-500 block">(${cmt.email || 'Ẩn email'})</span>
+              <p class="text-sm text-gray-500">${new Date(cmt.created).toLocaleString()}</p>
+
+            </p>
+            <p>${cmt.text}</p>
+          </div>
+        </div>
+        ${currentUser?.uid === cmt.uid ? `<button onclick="deleteComment('${docSnap.id}')" class="text-red-500 hover:underline text-sm">Erase</button>` : ''}
+      `;
+      return commentItem;
+    }
+
+    function listenToComments() {
+  const q = query(collection(db, "comments"), orderBy("created", "asc"));
+  const list = document.getElementById("commentList");
+  const notifySound = document.getElementById("notifySound");
+  let initialLoad = true;
+
+  onSnapshot(q, snapshot => {
+    const commentsMap = {};
+    const rootComments = [];
+
+    snapshot.forEach(docSnap => {
+      const data = { id: docSnap.id, ...docSnap.data() };
+      commentsMap[data.id] = { ...data, replies: [] };
+    });
+
+    Object.values(commentsMap).forEach(cmt => {
+      if (cmt.parentId && commentsMap[cmt.parentId]) {
+        commentsMap[cmt.parentId].replies.push(cmt);
+      } else {
+        rootComments.push(cmt);
+      }
+    });
+
+    list.innerHTML = "";
+
+    rootComments.reverse().forEach(cmt => {
+      const commentEl = renderCommentTree(cmt);
+      list.appendChild(commentEl);
+    });
+
+    // Phát thông báo khi có bình luận mới (không áp dụng lần đầu)
+    if (!initialLoad) {
+      const last = snapshot.docs[snapshot.docs.length - 1]?.data();
+      if (last) {
+        notifySound.play();
+        if (Notification.permission === "granted") {
+          new Notification("💬 New comments from " + last.name, {
+            body: last.text,
+            icon: last.photoURL || "https://www.gravatar.com/avatar/?d=mp"
+          });
+        }
+      }
+    }
+
+    // Cập nhật số lượng
+    const countEl = document.getElementById("commentCount");
+    if (countEl) countEl.textContent = `(${snapshot.size} comment)`;
+
+    initialLoad = false;
+  });
+}
+
+let replyToId = null;
+
+document.getElementById("sendComment").onclick = async () => {
+  const text = commentInput.value.trim();
+  if (text && currentUser) {
+    await addDoc(collection(db, "comments"), {
+name: currentUser.displayName,
+email: currentUser.email,
+photoURL: currentUser.photoURL,
+uid: currentUser.uid,
+text: text,
+created: Date.now(),
+parentId: replyToId || null
+});
+replyToId = null; // reset sau khi gửi
+document.getElementById("replyBox").remove();
+
+    commentInput.value = "";
+  }
+};
+
+window.submitReply = async (parentId) => {
+  const replyInput = document.getElementById("replyInput-" + parentId);
+  const replyText = replyInput.value.trim();
+  if (replyText) {
+    await addReply(parentId, replyText);
+    replyInput.value = "";
+    document.getElementById("replyBox-" + parentId).classList.add("hidden");
+  }
+};
+
+window.showReplyBox = (id) => {
+  const box = document.getElementById("replyBox-" + id);
+  box.classList.toggle("hidden");
+};
+
+
+    window.deleteComment = async (id) => {
+      await deleteDoc(doc(db, "comments", id));
+      const el = document.getElementById("cmt-" + id);
+      if (el) el.remove();
+    };
+
+    document.getElementById("deleteAllBtn").onclick = () => {
+      document.getElementById("passwordModal").classList.remove("hidden");
+    };
+
+    document.getElementById("confirmDeleteAll").onclick = async () => {
+      const pass = document.getElementById("deletePass").value;
+      if (pass === "khanhk8") {
+        const querySnapshot = await getDocs(collection(db, "comments"));
+const deletePromises = querySnapshot.docs.map(docSnap =>
+  deleteDoc(doc(db, "comments", docSnap.id))
+);
+await Promise.all(deletePromises);
+
+        document.getElementById("passwordModal").classList.add("hidden");
+      } else {
+        alert("Wrong password!");
+      }
+    };
+    window.deleteComment = async (id) => {
+  if (confirm("Are you sure you want to delete this comment?")) {
+    await deleteDoc(doc(db, "comments", id));
+    const el = document.getElementById("cmt-" + id);
+    if (el) el.remove();
+  }
+};
+
+  </script>
+   <!-- Captcha Fullscreen -->
+   <div id="overlay">
+    <h2>🔒 Please verify you're not a robot to enter KhanhPC</h2>
+    <div class="g-recaptcha"
+         data-sitekey="6LeZ4hUrAAAAAGw_5tX-okFpPNW2eFK9W0ZpTLm_"
+         data-callback="onCaptchaSuccess"></div>
+
+    <div id="loading">
+      <p>Opening the gate...</p>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+  </div>
+
+    <div class="header">
+        <h1>KhanhPC</h1>
+        <p>Remote software installation and repair service</p>
+    </div>
+    <div class="content">
+        <h2><strong>1. Our Services</strong></h2>
+        <div class="service">
+            <h3><li><strong>Computer Repair</strong></li></h3>
+            <p>We provide remote computer repair services, helping you solve software and operating system problems.</p>
+        </div>
+        <div class="service">
+            <h3><li><strong>Software installation</strong></li></h3>
+            <p>We support the installation of necessary software for your work and entertainment quickly and conveniently.</p>
+        </div>
+        <h2><strong>2. What is remote software installation?</strong></h2>
+        <p><mark>Remote software installation service is a process where a technical expert uses tools and software to connect to and control a customer's computer remotely.</mark> This saves time and travel costs, while providing fast and efficient support.</p>
+        <p>When using this service, customers need to install a remote connection software on their computer. Once the connection is established, the technical expert can access and operate on the customer's computer as if they were sitting directly in front of the screen.</p>
+        <p>Remote software installation services can be used to perform a variety of tasks such as software updates, new application installation, operating system fixes, system cleanup and optimization, and much more.</p>
+        <h2><strong>3. Why use remote software installation service?</strong></h2>
+        <ul>
+            <li><strong>Save time:</strong>No need to take your computer to the store or wait for a technician to come to your home, you can get support on the spot.</li>
+            <li><strong>Reasonable cost:</strong> Remote services are often less expensive than on-site services because there are no travel costs.</li>
+            <li><strong>Convenient:</strong> You can schedule appointments flexibly to fit your schedule without having to change your personal schedule.</li>
+            <li><strong>Safe:</strong> Your computer never leaves your home, reducing the risk of damage or loss during transit.</li>
+            <li><strong>Quick support:</strong> Get timely help for urgent issues without long waits.</li>
+        </ul>
+        <h2><strong>4. The difference between on-site and remote software installation</strong></h2>
+        <table class="price-table">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Element</th>
+                    <th style="text-align: center;">Install software at home</th>
+                    <th style="text-align: center;">Remote software installation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Convenient</td>
+                    <td>Technicians come to your location, but may have to wait and arrange a suitable time.</td>
+                    <td>Can be done immediately, no waiting, flexible in time.</td>
+                </tr>
+                <tr>
+                    <td>Expense</td>
+                    <td>Usually higher due to technician travel costs.</td>
+                    <td>Usually lower due to no travel costs.</td>
+                </tr>
+                <tr>
+                    <td>Location</td>
+                    <td>Must be present at customer's home.</td>
+                    <td>Just connect via internet.</td>
+                </tr>
+                <tr>
+                    <td>Time</td>
+                    <td>It can take a long time to wait for a technician to come and do the work.</td>
+                    <td>Get it done fast, when you need it.</td>
+                </tr>
+            </tbody>
+            
+            <table class="price-table" border="1">
+                <h2><strong>5. Price list</strong></h2>
+                <thead>
+                  <tr>
+                    <th>CODE</th>
+                    <th>SERVICE</th>
+                    <th>PRICE LIST ($)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>DV01</td><td>Install the first online software</td><td class="price" data-original="5,96">5,96</td></tr>
+                  <tr><td>DV02</td><td>Install 2nd and above software</td><td class="text-only">+2,89 / software</td></tr>
+                  <tr><td>DV03</td><td>Restart laptop software</td><td class="price" data-original="6,35">6,35</td></tr>
+                  <tr><td>DV04</td><td>Cài đặt office online</td><td class="price" data-original="6,54">6,54</td></tr>
+                  <tr><td>DV05</td><td>Install licensed office</td><td>Contact: <span>093*******</span></td></tr>
+                  <tr><td>DV06</td><td>Computer software, film making</td><td class="price" data-original="5,96">5,96</td></tr>
+                  <tr><td>DV07</td><td>Optimize computer cleaning</td><td class="price" data-original="5,77">5,77</td></tr>
+                  <tr><td>DV08</td><td>Office, IDM, PDF,...</td><td class="price" data-original="5,96">5,96</td></tr>
+                  <tr><td>DV09</td><td>Install software online</td><td>Contact: <span>093*******</span></td></tr>
+                  <tr><td>DV10</td><td>Advanced technical processing surcharge</td><td class="price" data-original="2,31">2,31</td></tr>
+                </tbody>
+              </table>
+              
+              
+              <input type="text" id="magiamgia" autocomplete="off" placeholder="Enter coupon code">
+              <button id="nutgiamgia" onclick="
+                const code = document.getElementById('magiamgia').value.trim().toLowerCase();
+                let discount = 0;
+                if (code === 'khanhpc') discount = 0.1;
+                else if (code === 'khanhgd') discount = 0.15;
+                else if (code === '05042008@qk') discount = 0.2;
+                else if (code === 'khanhk8') discount = 1;
+              
+                const priceCells = document.querySelectorAll('.price');
+                priceCells.forEach(cell => {
+                  const original = parseInt(cell.getAttribute('data-original'));
+                  if (discount > 0) {
+                    const discounted = original * (1 - discount);
+                    cell.innerHTML = `
+                      <span class='original-price'>${original.toLocaleString('vi-VN')}</span><br>
+                      <span class='discounted-price'>${discounted.toLocaleString('vi-VN')}</span>
+                    `;
+                  } else {
+                    cell.innerHTML = `${original.toLocaleString('vi-VN')}`;
+                  }
+                });
+              ">Apply code</button>
+              
+              <hr>
+              <h3><strong>Schedule support</strong></h3>
+              <div class="phone-input-group">
+                <select id="country-code" name="country-code">
+                  <option value="+93">+93 (Afghanistan)</option>
+                  <option value="+355">+355 (Albania)</option>
+                  <option value="+213">+213 (Algeria)</option>
+                  <option value="+376">+376 (Andorra)</option>
+                  <option value="+244">+244 (Angola)</option>
+                  <option value="+54">+54 (Argentina)</option>
+                  <option value="+374">+374 (Armenia)</option>
+                  <option value="+61">+61 (Australia)</option>
+                  <option value="+43">+43 (Austria)</option>
+                  <option value="+994">+994 (Azerbaijan)</option>
+                  <option value="+973">+973 (Bahrain)</option>
+                  <option value="+880">+880 (Bangladesh)</option>
+                  <option value="+375">+375 (Belarus)</option>
+                  <option value="+32">+32 (Belgium)</option>
+                  <option value="+591">+591 (Bolivia)</option>
+                  <option value="+387">+387 (Bosnia)</option>
+                  <option value="+55">+55 (Brazil)</option>
+                  <option value="+359">+359 (Bulgaria)</option>
+                  <option value="+855">+855 (Cambodia)</option>
+                  <option value="+1">+1 (Canada)</option>
+                  <option value="+86">+86 (China)</option>
+                  <option value="+57">+57 (Colombia)</option>
+                  <option value="+506">+506 (Costa Rica)</option>
+                  <option value="+385">+385 (Croatia)</option>
+                  <option value="+357">+357 (Cyprus)</option>
+                  <option value="+420">+420 (Czech Republic)</option>
+                  <option value="+45">+45 (Denmark)</option>
+                  <option value="+20">+20 (Egypt)</option>
+                  <option value="+372">+372 (Estonia)</option>
+                  <option value="+358">+358 (Finland)</option>
+                  <option value="+33">+33 (France)</option>
+                  <option value="+995">+995 (Georgia)</option>
+                  <option value="+49">+49 (Germany)</option>
+                  <option value="+30">+30 (Greece)</option>
+                  <option value="+852">+852 (Hong Kong)</option>
+                  <option value="+36">+36 (Hungary)</option>
+                  <option value="+91">+91 (India)</option>
+                  <option value="+62">+62 (Indonesia)</option>
+                  <option value="+98">+98 (Iran)</option>
+                  <option value="+964">+964 (Iraq)</option>
+                  <option value="+353">+353 (Ireland)</option>
+                  <option value="+972">+972 (Israel)</option>
+                  <option value="+39">+39 (Italy)</option>
+                  <option value="+81">+81 (Japan)</option>
+                  <option value="+962">+962 (Jordan)</option>
+                  <option value="+7">+7 (Kazakhstan)</option>
+                  <option value="+254">+254 (Kenya)</option>
+                  <option value="+82">+82 (Korea, South)</option>
+                  <option value="+965">+965 (Kuwait)</option>
+                  <option value="+856">+856 (Laos)</option>
+                  <option value="+371">+371 (Latvia)</option>
+                  <option value="+961">+961 (Lebanon)</option>
+                  <option value="+370">+370 (Lithuania)</option>
+                  <option value="+352">+352 (Luxembourg)</option>
+                  <option value="+60">+60 (Malaysia)</option>
+                  <option value="+960">+960 (Maldives)</option>
+                  <option value="+52">+52 (Mexico)</option>
+                  <option value="+373">+373 (Moldova)</option>
+                  <option value="+976">+976 (Mongolia)</option>
+                  <option value="+95">+95 (Myanmar)</option>
+                  <option value="+31">+31 (Netherlands)</option>
+                  <option value="+64">+64 (New Zealand)</option>
+                  <option value="+234">+234 (Nigeria)</option>
+                  <option value="+47">+47 (Norway)</option>
+                  <option value="+92">+92 (Pakistan)</option>
+                  <option value="+51">+51 (Peru)</option>
+                  <option value="+63">+63 (Philippines)</option>
+                  <option value="+48">+48 (Poland)</option>
+                  <option value="+351">+351 (Portugal)</option>
+                  <option value="+974">+974 (Qatar)</option>
+                  <option value="+40">+40 (Romania)</option>
+                  <option value="+7">+7 (Russia)</option>
+                  <option value="+966">+966 (Saudi Arabia)</option>
+                  <option value="+65">+65 (Singapore)</option>
+                  <option value="+421">+421 (Slovakia)</option>
+                  <option value="+386">+386 (Slovenia)</option>
+                  <option value="+27">+27 (South Africa)</option>
+                  <option value="+34">+34 (Spain)</option>
+                  <option value="+94">+94 (Sri Lanka)</option>
+                  <option value="+46">+46 (Sweden)</option>
+                  <option value="+41">+41 (Switzerland)</option>
+                  <option value="+886">+886 (Taiwan)</option>
+                  <option value="+66">+66 (Thailand)</option>
+                  <option value="+90">+90 (Turkey)</option>
+                  <option value="+380">+380 (Ukraine)</option>
+                  <option value="+971">+971 (UAE)</option>
+                  <option value="+44">+44 (UK)</option>
+                  <option value="+1">+1 (USA)</option>
+                  <option value="+84" selected>+84 (Vietnam)</option>
+                  <option value="+967">+967 (Yemen)</option>
+                  <option value="+260">+260 (Zambia)</option>
+                  <option value="+263">+263 (Zimbabwe)</option>
+                </select>
+              
+                <input type="tel" id="phone" name="phone" placeholder="Enter phone number"><br><br>
+              <input type="text" id="ngay" placeholder="Date (01-31)" maxlength="2" autocomplete="off" required oninput="
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0,2);
+                if (parseInt(this.value) > 31) this.value = '31';
+                else if (parseInt(this.value) < 1 && this.value.length > 0) this.value = '01';
+              "><br><br>
+              
+              <input type="text" id="thang" placeholder="Month (01-12)" maxlength="2" autocomplete="off" required oninput="
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0,2);
+                if (parseInt(this.value) > 12) this.value = '12';
+                else if (parseInt(this.value) < 1 && this.value.length > 0) this.value = '01';
+              "><br><br>
+              
+              <input type="text" id="nam" placeholder="Year (must > 2025)" maxlength="4" autocomplete="off" required oninput="
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0,4);
+               
+              "><br><br>
+              
+              <input id="hotro" autocomplete="off" placeholder="Enter service code (For example DV01)" style="width: 20%; height: 40px;"></input><br><br>
+              
+              <label><input type="checkbox" id="tich1"> I agree to the terms</label><br>
+              <label><input type="checkbox" id="tich2"> I confirm the support request</label><br><br>
+              
+              <label><strong><i>Commitment to pay 50% in advance when 60% is installed:</i></strong></label><br>
+              <label><input type="radio" name="camketThanhToan" value="Payment commitment"> I promise</label><br>
+              <label><input type="radio" name="camketThanhToan" value="No payment commitment"> I do not promise</label><br><br>
+              
+              <button id="gui" onclick="
+              const ngay = document.getElementById('ngay').value;
+              const thang = document.getElementById('thang').value;
+              const nam = document.getElementById('nam').value;
+              const hotroCode = document.getElementById('hotro').value.trim().toUpperCase();
+              const tich1 = document.getElementById('tich1').checked;
+              const tich2 = document.getElementById('tich2').checked;
+              const camket = document.querySelector('input[name=\'camketThanhToan\']:checked');
+            
+              // Lấy số điện thoại
+              const countryCode = document.getElementById('country-code').value;
+              const phoneNumber = document.getElementById('phone').value.trim();
+              const fullPhone = phoneNumber ? `${countryCode} ${phoneNumber}` : 'Not provided';
+            
+              if (!ngay || !thang || !nam || !hotroCode) {
+                alert('You must enter the full day, month, year and service code.');
+                return;
+              }
+              if (!tich1 || !tich2) {
+                alert('You must agree to all terms.');
+                return;
+              }
+              if (!camket) {
+                alert('You must select a payment commitment.');
+                return;
+              }
+              if (camket.value === 'No payment commitment') {
+                document.body.innerHTML = '<div style=\'text-align:center; font-size:24px; margin-top:20%;\'>Since you did not commit to payment, we stopped supporting you (Press Ctrl+R to get support again).</div>';
+                return;
+              }
+            
+              const row = Array.from(document.querySelectorAll('table.price-table tbody tr')).find(tr => tr.cells[0].textContent === hotroCode);
+              let dichvuText = 'Service code not found';
+              if (row) {
+                const ten = row.cells[1].textContent;
+                const giaCell = row.cells[2];
+            
+                let gia = giaCell.textContent.trim();
+                const discounted = giaCell.querySelector('.discounted-price');
+                if (discounted) {
+                  gia = discounted.textContent.trim() + ' $';
+                } else if (!gia.includes('Liên hệ')) {
+                  gia = gia + ' $';
+                }
+            
+                dichvuText = `${ten} - ${gia}`;
+              }
+            
+              const subject = 'Schedule support';
+              const body = `-------------------------\n\n` +
+                           `🔥 Day: ${ngay}/${thang}/${nam}\n\n` +
+                           `🛠️ Services need support: ${dichvuText}\n\n` +
+                           `👌 Detail: ${hotroCode}\n\n` +
+                           `📞 Phone number: ${fullPhone}\n\n` +
+                           `✅ Agree to terms: Yes\n📌 Support Confirmation: Yes\n\n` +
+                           `💰 Payment commitment: ${camket.value}\n\n-------------------------`;
+            
+              const mailto = `https://mail.google.com/mail/?view=cm&fs=1&to=vyk103736@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              window.open(mailto, '_blank');
+              document.body.innerHTML = '<div style=\'text-align:center; font-size:24px; margin-top:20%;\'>Thank you for your support. We will reply to your email as soon as possible!</div>';
+            ">Book now</button>
+            
+            
+    <br><br>
+
+    <hr>
+
+</body>
+        <div class="contact-section">
+            <h3><i><strong>Contact us</strong></i></h3>
+            <p>Phone: <a id = 'lh' href="tel:+0937648921">0937648921</a></p>
+            <p>Facebook: <a id = 'lh' href="https://www.facebook.com/profile.php?id=100079270105917">Hoàng Quốc Khánh</a></p>
+            <p>Email: <a id = 'lh' href="mailto:vyk103736@gmail.com">vyk103736@gmail.com</a></p>
+            <button class="bamlienhe" onclick="window.location.href = 'tel:+84937648921'">Call now</button>
+            <button class="bamlienhe" onclick="window.open('https://mail.google.com/mail/?view=cm&fs=1&to=vyk103736@gmail.com&su= Ask anything you want to know')">Contact by Email</button>
+                 <p></p>
+            <button class="bamlienhe" onclick="window.open('https://www.facebook.com/profile.php?id=100079270105917', '_blank')">Contact Facebook</button>
+        </div>
+        <div class="w-full max-w-xl mt-10">
+          <h1 class="text-2xl font-bold mb-4 text-center">
+            💬 comment 
+            <br><span id="commentCount" class="text-base text-gray-600 font-normal">(0 comment)</span>
+          </h1>
+          
+      
+          <div id="userInfo" class="mb-4 flex items-center justify-center"></div>
+          <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Google Sign In</button>
+      
+          <div id="commentBox" class="hidden mt-6">
+            <textarea id="commentInput" placeholder="Enter comment..." class="w-full p-3 rounded-lg border border-gray-300 mb-2"></textarea>
+            <div class="flex justify-between">
+              <button id="sendComment" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Submit a comment</button>
+              <button id="deleteAllBtn" class="text-red-500 hover:underline">🗑 Clear all</button>
+            </div>
+          </div>
+      
+          <div id="commentList" class="mt-6 space-y-3"></div>
+        </div>
+      
+        <!-- Modal nhập mật khẩu -->
+        <div id="passwordModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div class="bg-white p-6 rounded-xl shadow-xl w-80">
+            <h2 class="text-lg font-semibold mb-4">Confirm delete all</h2>
+            <input type="password" id="deletePass" placeholder="Enter password..." class="w-full mb-3 p-2 border rounded-md">
+            <button id="confirmDeleteAll" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 w-full">Confirm</button>
+          </div>
+        </div>
+        <br><br>
+            
+    <div class="footer">
+        <p>&copy; <span id="current-year"></span> KhanhPC. All rights reserved.</p>
+        <p id="real-time"></p>
+        <button id="backToTop">▲</button>
+
+
+<script src="khanhpcen.js"></script>
+<script>
+</script>
+</body>
+</html> 

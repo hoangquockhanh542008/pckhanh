@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liên hệ - Hoàng Quốc Khánh</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-indigo-200 to-blue-100 min-h-screen flex flex-col items-center justify-center text-gray-800">
+
+  <h1 class="text-5xl font-bold mb-8" data-aos="zoom-in">💬 Liên hệ với mình</h1>
+  <button onclick="openModal()" data-aos="fade-up"
+    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full text-xl font-semibold shadow-lg transition-all duration-300">
+    Liên hệ
+  </button>
+
+  <!-- Modal -->
+  <div id="contactModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-96 max-w-full animate-fade-in-up" data-aos="zoom-in-up">
+      <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">📱 Thông tin liên hệ</h2>
+      <div class="space-y-4 text-lg">
+        <div class="flex items-center space-x-2">
+          <span class="font-semibold">Số điện thoại:</span>
+          <a href="tel:0937648921" class="text-blue-600 hover:underline">0937648921</a>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-semibold">Email:</span>
+          <a href="mailto:vyk193736@gmail.com" class="text-blue-600 hover:underline">vyk193736@gmail.com</a>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-semibold">Facebook:</span>
+          <a href="https://www.facebook.com/profile.php?id=100079270105917" target="_blank" class="text-blue-600 hover:underline">Xem Facebook</a>
+        </div>
+      </div>
+      <div class="mt-6 text-center">
+        <button onclick="closeModal()"
+          class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-all">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AOS & Modal Script -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000 });
+
+    function openModal() {
+      document.getElementById('contactModal').classList.remove('hidden');
+      document.getElementById('contactModal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('contactModal').classList.add('hidden');
+      document.getElementById('contactModal').classList.remove('flex');
+    }
+  </script>
+
+  <!-- Optional: Fade-in Animation -->
+  <style>
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fade-in-up 0.5s ease-out;
+    }
+  </style>
+
+</body>
+</html>
