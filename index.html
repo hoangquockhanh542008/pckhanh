@@ -2,26 +2,26 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Danh sách các trang của Khanh</title>
+  <title>Danh sách file từ GitHub</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f4f4f4;
+      background-color: #f9f9f9;
     }
     h1 {
       color: #333;
     }
     ul {
-      list-style: none;
+      list-style-type: none;
       padding: 0;
     }
     li {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     a {
+      color: #007bff;
       text-decoration: none;
-      color: #007acc;
       font-weight: bold;
     }
     a:hover {
@@ -30,19 +30,40 @@
   </style>
 </head>
 <body>
-  <h1>📂 Danh sách các trang web</h1>
-  <ul>
-    <li><a href="index.html">🏠 index.html (Trang chủ)</a></li>
-    <li><a href="gioithieu.html">ℹ️ gioithieu.html (Giới thiệu)</a></li>
-    <li><a href="khanhpc.html">💻 khanhpc.html</a></li>
-    <li><a href="login.html">🔐 login.html</a></li>
-    <li><a href="phanmem.html">🧩 phanmem.html (Phần mềm)</a></li>
-    <li><a href="thongtin.html">📄 thongtin.html (Thông tin)</a></li>
-    <li><a href="dangky.html">📝 dangky.html (Đăng ký)</a></li>
-    <li><a href="dangnhap.html">🔑 dangnhap.html (Đăng nhập)</a></li>
-    <li><a href="style.css">🎨 style.css (CSS)</a></li>
-    <li><a href="images/logo.png">🖼 logo.png (ảnh)</a></li>
-    <li><a href="images/bg.jpg">🌄 bg.jpg (ảnh nền)</a></li>
-  </ul>
+  <h1>📁 Danh sách file trong GitHub Repo</h1>
+  <ul id="file-list">Đang tải...</ul>
+
+  <script>
+    const user = "hoangquockhanh542008";
+    const repo = "pckhanh";
+    const branch = "main"; // hoặc "master" nếu bạn dùng nhánh đó
+    const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/`;
+
+    async function fetchFiles(path = '') {
+      const response = await fetch(apiUrl + path);
+      const files = await response.json();
+      const ul = document.getElementById('file-list');
+      if (path === '') ul.innerHTML = ''; // clear only on first level
+
+      files.forEach(file => {
+        const li = document.createElement('li');
+        if (file.type === "file") {
+          const link = document.createElement('a');
+          link.href = `https://${user}.github.io/${repo}/${file.path}`;
+          link.textContent = file.path;
+          link.target = "_blank";
+          li.appendChild(link);
+        } else if (file.type === "dir") {
+          li.innerHTML = `<strong>📂 ${file.name}/</strong>`;
+          ul.appendChild(li);
+          fetchFiles(file.path); // fetch subfolder
+          return; // skip appending again
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    fetchFiles();
+  </script>
 </body>
 </html>
